@@ -7,7 +7,7 @@
  */
 
 import React, { Component } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, StyleSheet, Text, View, TouchableOpacity } from "react-native";
 import { Buffer } from "buffer";
 import { BleManager } from "react-native-ble-plx";
 
@@ -20,6 +20,7 @@ const instructions = Platform.select({
 
 const PiServiceID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
 const PiCharacteristicIDButton = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+const PiCharacteristicIDSend = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
 
 type Props = {};
 export default class App extends Component<Props> {
@@ -33,6 +34,8 @@ export default class App extends Component<Props> {
       ble: "Unknown",
       connected: false
     };
+
+    this.onPress = this.onPress.bind(this);
   }
 
   componentDidMount() {
@@ -51,9 +54,16 @@ export default class App extends Component<Props> {
   render() {
     return (
       <View style={styles.container}>
-        <Text style={styles.welcome}>Welcome to React Native!</Text>
-        <Text style={styles.instructions}>To get started, edit App.js</Text>
-        <Text style={styles.instructions}>{instructions}</Text>
+        <Text style={styles.welcome}>Bluetooth: {this.state.ble}</Text>
+        <Text style={styles.welcome}>
+          Device: {this.state.connected ? "Connected" : "Not Connected"}
+        </Text>
+        <View
+          style={this.state.buttonPressed ? styles.buttonOn : styles.buttonOff}
+        />
+        <TouchableOpacity onPress={this.onPress}>
+          <Text>Send Hej</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -107,6 +117,23 @@ export default class App extends Component<Props> {
 
     const value = Buffer.from(characteristic.value, "base64").toString("ascii");
     console.log("Button 1 ", value);
+    this.setState({ buttonPressed: true });
+
+    setTimeout(() => this.setState({ buttonPressed: false }), 500);
+  }
+
+  onPress() {
+    const value = "Hej";
+    const valueEncoded = Buffer.from(value, "ascii").toString("base64");
+
+    if (this.device) {
+      this.manager.writeCharacteristicWithResponseForDevice(
+        this.device.id,
+        PiServiceID,
+        PiCharacteristicIDSend,
+        valueEncoded
+      );
+    }
   }
 }
 
@@ -122,9 +149,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     margin: 10
   },
-  instructions: {
-    textAlign: "center",
-    color: "#333333",
-    marginBottom: 5
+  buttonOn: {
+    width: 200,
+    height: 30,
+    backgroundColor: "green"
+  },
+  buttonOff: {
+    width: 200,
+    height: 30
   }
 });

@@ -98,6 +98,15 @@ void setup() {
   // Create a BLE Descriptor
   pCharacteristic->addDescriptor(new BLE2902());
 
+
+  // Create RX (Incoming Data) BLE Characteristic
+  pCharacteristicRx = pService->createCharacteristic(
+                        CHARACTERISTIC_RX,
+                        BLECharacteristic::PROPERTY_WRITE
+                      );
+  pCharacteristicRx->setCallbacks(new MyCallbacks());
+  
+
   // Start the service
   pService->start();
 

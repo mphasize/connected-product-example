@@ -27,10 +27,10 @@ BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
+
 String value = "Short";
 
 long longPressTime = 1200;
-
 const int button1Pin = 0;
 long button1Timer = 0;
 boolean button1Active = false;

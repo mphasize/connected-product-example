@@ -25,6 +25,8 @@
 
 BLEServer* pServer = NULL;
 BLECharacteristic* pCharacteristic = NULL;
+BLECharacteristic* pCharacteristicRx = NULL;
+
 bool deviceConnected = false;
 bool oldDeviceConnected = false;
 
@@ -42,6 +44,7 @@ boolean longPress1Active = false;
 
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
 #define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+#define CHARACTERISTIC_RX   "6E400002-B5A3-F393-E0A9-E50E24DCCA9E" // Receive data
 
 
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -54,6 +57,17 @@ class MyServerCallbacks: public BLEServerCallbacks {
     }
 };
 
+class MyCallbacks: public BLECharacteristicCallbacks {
+    void onWrite(BLECharacteristic *pCharacteristicRead) {
+      //Serial.println("BLE: received data");
+      std::string rxValue = pCharacteristicRead->getValue();
+
+      Serial.print("Received Value: ");
+      for (int i = 0; i < rxValue.length(); i++)
+        Serial.print(rxValue[i]);
+      Serial.println();
+    }
+};
 
 
 void setup() {
@@ -93,24 +107,24 @@ void setup() {
 }
 
 void loop() {
-    // notify changed value
-    handleButtons();
-    
-    // disconnecting
-    if (!deviceConnected && oldDeviceConnected) {
-        delay(500); // give the bluetooth stack the chance to get things ready
-        pServer->startAdvertising(); // restart advertising
-        Serial.println("start advertising");
-        oldDeviceConnected = deviceConnected;
-    }
-    
-    // connecting
-    if (deviceConnected && !oldDeviceConnected) {
-        // do stuff here on connecting
-        oldDeviceConnected = deviceConnected;
-    }
+  // notify changed value
+  handleButtons();
 
-    delay(10);
+  // disconnecting
+  if (!deviceConnected && oldDeviceConnected) {
+    delay(500); // give the bluetooth stack the chance to get things ready
+    pServer->startAdvertising(); // restart advertising
+    Serial.println("start advertising");
+    oldDeviceConnected = deviceConnected;
+  }
+
+  // connecting
+  if (deviceConnected && !oldDeviceConnected) {
+    // do stuff here on connecting
+    oldDeviceConnected = deviceConnected;
+  }
+
+  delay(10);
 }
 
 void onButton1Press() {
@@ -123,7 +137,7 @@ void onButton1Press() {
 }
 
 void onButton1LongPress() {
-  Serial.println("BTN 1 long press");  
+  Serial.println("BTN 1 long press");
   if (deviceConnected) {
     value = "Long";
     pCharacteristic->setValue(value.c_str());
@@ -150,5 +164,5 @@ void handleButtons() {
       }
       button1Active = false;
     }
-  }  
+  }
 }
